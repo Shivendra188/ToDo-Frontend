@@ -1,0 +1,26 @@
+.backdrop {
+  position:fixed;
+  left:0; right:0; top:0; bottom:0;
+  display:flex; align-items:center; justify-content:center;
+  background: rgba(2,6,23,0.4);
+  z-index:1000;
+}
+.modal {
+  width:100%;
+  max-width:720px;
+  background:var(--surface);
+  padding:20px;
+  border-radius:12px;
+  box-shadow:var(--shadow);
+}
+.modal label { display:block; margin-top:10px; font-size:13px; }
+.modal input[type="text"], .modal input[type="date"], .modal textarea, .modal select {
+  width:100%;
+  padding:8px;
+  border-radius:8px;
+  border:1px solid rgba(15,23,42,0.06);
+  margin-top:6px;
+}
+.row { display:flex; gap:12px; align-items:center; }
+.subtasks { margin-top:12px; }
+.subtaskRow { display:flex; gap:10px; align-items:center; margin-top:8px; }

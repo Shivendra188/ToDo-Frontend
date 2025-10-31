@@ -1,0 +1,24 @@
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.emptyState {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  padding: 28px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.4), transparent);
+}
+.emptyState img {
+  max-width: 180px;
+  width: 45%;
+  height: auto;
+  opacity: 0.95;
+}

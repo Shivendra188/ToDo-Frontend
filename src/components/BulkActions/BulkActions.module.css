@@ -1,0 +1,9 @@
+.container {
+  display:flex;
+  gap:12px;
+  align-items:center;
+  padding: 10px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+}
+.placeholder { color: var(--text-2); }
