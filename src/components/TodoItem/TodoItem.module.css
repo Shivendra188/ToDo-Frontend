@@ -1,26 +1,222 @@
-.backdrop {
-  position:fixed;
-  left:0; right:0; top:0; bottom:0;
-  display:flex; align-items:center; justify-content:center;
-  background: rgba(2,6,23,0.4);
-  z-index:1000;
+/* ---------- BASE CARD ---------- */
+.card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  box-shadow: var(--shadow);
+  margin-bottom: 10px;
+  transition: transform 0.3s ease, opacity 0.3s ease, background 0.3s ease;
+  animation: fadeSlideIn 0.3s ease;
 }
-.modal {
-  width:100%;
-  max-width:720px;
-  background:var(--surface);
-  padding:20px;
-  border-radius:12px;
-  box-shadow:var(--shadow);
+
+/* ---------- COMPLETED TODO ---------- */
+.completedCard {
+  opacity: 0.6;
+  background: rgba(148, 163, 184, 0.08);
+  transform: translateY(6px) scale(0.98);
+  transition: all 0.4s ease-in-out;
+  transition-delay: 0.1s;
 }
-.modal label { display:block; margin-top:10px; font-size:13px; }
-.modal input[type="text"], .modal input[type="date"], .modal textarea, .modal select {
-  width:100%;
-  padding:8px;
-  border-radius:8px;
-  border:1px solid rgba(15,23,42,0.06);
-  margin-top:6px;
+
+.completedCard:hover {
+  opacity: 0.8;
+  transform: translateY(0) scale(1);
 }
-.row { display:flex; gap:12px; align-items:center; }
-.subtasks { margin-top:12px; }
-.subtaskRow { display:flex; gap:10px; align-items:center; margin-top:8px; }
+
+/* ---------- TITLE ---------- */
+.title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  transition: color 0.3s ease, text-decoration 0.3s ease, opacity 0.3s ease;
+}
+
+.completed {
+  text-decoration: line-through;
+  color: var(--muted);
+  opacity: 0.7;
+  transition: all 0.3s ease-in-out;
+}
+
+/* ---------- PRIORITY LABEL ---------- */
+.priority {
+  text-transform: capitalize;
+  font-size: 13px;
+  margin-right: 8px;
+  color: var(--text);
+}
+.priority.high {
+  color: #ef4444;
+}
+.priority.medium {
+  color: #f59e0b;
+}
+.priority.low {
+  color: #10b981;
+}
+
+/* ---------- DUE DATE ---------- */
+.due {
+  font-size: 13px;
+  color: var(--muted);
+  margin-right: 10px;
+}
+
+/* ---------- DESCRIPTION + SUBTASKS ---------- */
+.bottomRow {
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.desc {
+  margin-bottom: 6px;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.subtasks {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ---------- COMPLETE BUTTON ---------- */
+.completeBtn {
+  background: transparent;
+  border: 1px solid var(--muted);
+  color: var(--text);
+  font-size: 18px;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease-in-out;
+}
+
+.completeBtn:hover {
+  background: rgba(37, 99, 235, 0.1);
+  border-color: var(--accent);
+}
+
+/* ---------- COMPLETE ANIMATION (Green Bounce + Glow) ---------- */
+.completedAnim {
+  color: #10b981;
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.15);
+  animation: bounceCheck 0.4s ease, glowCheck 1s ease-out;
+}
+
+@keyframes bounceCheck {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.3); }
+  60% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+@keyframes glowCheck {
+  0% { box-shadow: 0 0 0 rgba(16, 185, 129, 0.6); }
+  50% { box-shadow: 0 0 8px rgba(16, 185, 129, 0.8); }
+  100% { box-shadow: 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* ---------- FADE-IN WHEN CREATED ---------- */
+@keyframes fadeSlideIn {
+  0% { opacity: 0; transform: translateY(-8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- UNDO RESTORE ANIMATION ---------- */
+@keyframes slideBounceIn {
+  0% { opacity: 0; transform: translateY(25px) scale(0.95); }
+  60% { opacity: 1; transform: translateY(-6px) scale(1.02); }
+  80% { transform: translateY(3px) scale(0.99); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+.restoredCard {
+  animation: slideBounceIn 0.55s ease, restoreGlow 1.5s ease-out;
+}
+
+/* ✅ Subtle green flash after Undo */
+@keyframes restoreGlow {
+  0% { background-color: rgba(16, 185, 129, 0.15); }
+  70% { background-color: rgba(16, 185, 129, 0.05); }
+  100% { background-color: transparent; }
+}
+/* ✅ Overdue indicator (red highlight flash when overdue) */
+.overdueCard {
+  animation: overdueFlash 1.5s ease-in-out;
+  background: rgba(239, 68, 68, 0.05);
+}
+
+@keyframes overdueFlash {
+  0% {
+    background-color: rgba(239, 68, 68, 0);
+  }
+  30% {
+    background-color: rgba(239, 68, 68, 0.15);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+/* ✅ Overdue text style */
+.due.overdue {
+  color: #ef4444;
+  font-weight: 600;
+  animation: blinkRed 1s infinite alternate;
+}
+
+@keyframes blinkRed {
+  0% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+/* ✅ Overdue todo card (red glow + pulse) */
+.overdueCard {
+  border-left: 4px solid #ef4444;
+  background: rgba(239, 68, 68, 0.06);
+  box-shadow: 0 2px 10px rgba(239, 68, 68, 0.2);
+  animation: overdueGlow 2s infinite ease-in-out;
+  transition: all 0.3s ease-in-out;
+}
+
+@keyframes overdueGlow {
+  0% {
+    box-shadow: 0 0 0px rgba(239, 68, 68, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.6);
+  }
+  100% {
+    box-shadow: 0 0 0px rgba(239, 68, 68, 0.3);
+  }
+}
+
+/* ✅ Overdue date text */
+.overdue {
+  color: #ef4444 !important;
+  font-weight: 600;
+  animation: blinkDate 1.5s infinite;
+}
+
+@keyframes blinkDate {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+.overdueCard {
+  transform: translateY(-2px);
+}

@@ -1,14 +1,72 @@
-.snackbar {
+.toast {
   position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
   bottom: 24px;
-  background: var(--surface);
-  color: var(--text);
-  padding: 10px 14px;
-  border-radius: 8px;
+  right: 24px;
+  min-width: 280px;
+  max-width: 360px;
+  padding: 14px 18px;
+  border-radius: var(--radius);
   box-shadow: var(--shadow);
-  display:flex;
-  gap:12px;
-  align-items:center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--surface);
+  backdrop-filter: blur(var(--glass-blur));
+  color: var(--text);
+  animation: slideIn 0.3s ease, fadeOut 0.3s ease 3.7s forwards;
+  z-index: 1000;
+}
+
+.message {
+  flex: 1;
+  font-size: 0.95rem;
+}
+
+/* ✅ Toast types (colored border left) */
+.toast.success {
+  border-left: 4px solid var(--success);
+}
+
+.toast.error {
+  border-left: 4px solid var(--danger);
+}
+
+.toast.info {
+  border-left: 4px solid var(--accent);
+}
+
+/* ✅ Buttons */
+.actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* ✅ Animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* ✅ Responsive */
+@media (max-width: 640px) {
+  .toast {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    width: auto;
+  }
 }

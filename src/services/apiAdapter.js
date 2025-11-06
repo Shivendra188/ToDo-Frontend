@@ -1,20 +1,59 @@
-// Simple adapter that mimics async server calls. Replace implementations with fetch/Axios to a real API.
-const simulateDelay = (ms = 400) => new Promise((res) => setTimeout(res, ms));
+const API_URL = "http://localhost:5000/api/todos";
 
 export const api = {
+  // ✅ Fetch all todos
   async fetchTodos() {
-    await simulateDelay(300);
-    // return [] // when server exists, call fetch
-    return { status: 200, data: [] };
+    try {
+      const res = await fetch(API_URL);
+      if (!res.ok) throw new Error("Failed to fetch todos");
+      const data = await res.json();
+      return { status: 200, data };
+    } catch (err) {
+      console.error("❌ fetchTodos error:", err);
+      return { status: 500, data: [] };
+    }
   },
 
+  // ✅ Create new todo
   async saveTodo(todo) {
-    await simulateDelay(200);
-    return { status: 200, data: todo };
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(todo),
+      });
+      const data = await res.json();
+      return { status: res.ok ? 200 : res.status, data };
+    } catch (err) {
+      console.error("❌ saveTodo error:", err);
+      return { status: 500, data: null };
+    }
   },
 
+  // ✅ Update todo
+  async updateTodo(id, updates) {
+    try {
+      const res = await fetch(`${API_URL}/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+      const data = await res.json();
+      return { status: res.ok ? 200 : res.status, data };
+    } catch (err) {
+      console.error("❌ updateTodo error:", err);
+      return { status: 500, data: null };
+    }
+  },
+
+  // ✅ Delete todo
   async deleteTodo(id) {
-    await simulateDelay(150);
-    return { status: 200 };
-  }
+    try {
+      const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+      return { status: res.ok ? 200 : res.status };
+    } catch (err) {
+      console.error("❌ deleteTodo error:", err);
+      return { status: 500 };
+    }
+  },
 };

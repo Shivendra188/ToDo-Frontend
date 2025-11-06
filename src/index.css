@@ -1,101 +1,82 @@
-/* ---------- Root Theme Variables ---------- */
+/* ---------- Theme Variables ---------- */
 :root {
-  --bg: linear-gradient(135deg, #f9fafb, #e0e7ff);
-  --surface: rgba(255, 255, 255, 0.6);
-  --text: #0f172a;
+  --bg: #f9fafb;
+  --surface: #ffffff;
+  --text: #111827;
   --muted: #6b7280;
   --accent: #2563eb;
-  --accent-hover: #1e40af;
-  --danger: #ef4444;
-  --success: #10b981;
-  --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
-  --radius: 14px;
-  --transition: 250ms ease;
-  --card-padding: 16px;
-  --glass-blur: 14px;
+  --accent-hover: #1d4ed8;
+  --radius: 10px;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --transition: 200ms ease;
 }
 
-/* ---------- Dark Mode ---------- */
 body.theme-dark {
-  --bg: linear-gradient(135deg, #040505, #0a0a0a);
-  --surface: rgba(15, 23, 42, 0.5);
-  --text: #e6eef8;
-  --muted: #9aa7bb;
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
   --accent: #60a5fa;
   --accent-hover: #3b82f6;
-  --danger: #fb7185;
-  --success: #34d399;
-  --shadow: 0 8px 28px rgba(2, 6, 23, 0.8);
+  --shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
 }
 
-/* ---------- Global Reset ---------- */
+/* ---------- Global ---------- */
 * {
-  box-sizing: border-box;
   margin: 0;
   padding: 0;
-}
-
-html, body, #root {
-  height: 100%;
+  box-sizing: border-box;
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
+  font-family: "Inter", system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  padding: 20px;
-  animation: bgShift 12s ease-in-out infinite alternate;
-}
-
-/* Background animation */
-@keyframes bgShift {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
-}
-
-/* ---------- Container ---------- */
-.container {
-  max-width: 900px;
-  margin: 0 auto;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  align-items: center;
+  padding: 20px;
+  transition: background var(--transition), color var(--transition);
 }
 
-/* ---------- Card Style ---------- */
+.container {
+  width: 100%;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ---------- Cards ---------- */
 .card {
   background: var(--surface);
-  backdrop-filter: blur(var(--glass-blur));
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: var(--card-padding);
-  transition: all var(--transition);
+  padding: 16px;
+  transition: transform var(--transition), box-shadow var(--transition);
 }
 
 .card:hover {
-  transform: translateY(-4px) scale(1.01);
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 /* ---------- Buttons ---------- */
 .btn {
   background: var(--accent);
-  color: white;
-  padding: 10px 18px;
-  border-radius: 10px;
+  color: #fff;
   border: none;
-  cursor: pointer;
+  border-radius: var(--radius);
+  padding: 10px 16px;
   font-weight: 500;
-  transition: all var(--transition);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition);
 }
 
 .btn:hover {
   background: var(--accent-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.35);
+  transform: translateY(-1px);
 }
 
 .btn:active {
@@ -105,82 +86,169 @@ body {
 .btn.ghost {
   background: transparent;
   color: var(--text);
-  border: 1px solid rgba(15, 23, 42, 0.1);
+  border: 1px solid var(--muted);
 }
 
 .btn.ghost:hover {
-  background: rgba(37, 99, 235, 0.1);
-  color: var(--accent-hover);
+  background: var(--accent);
+  color: #fff;
 }
 
-/* ---------- Utility Layouts ---------- */
+/* ---------- Inputs ---------- */
+input,
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--muted);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  transition: border var(--transition), box-shadow var(--transition);
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+/* ---------- Todo Items ---------- */
+.todo-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  box-shadow: var(--shadow);
+  transition: background var(--transition), transform var(--transition);
+}
+
+.todo-item:hover {
+  transform: translateY(-1px);
+}
+
+.todo-text {
+  flex: 1;
+  margin-right: 8px;
+  color: var(--text);
+}
+
+/* ---------- Layout Utilities ---------- */
 .row {
   display: flex;
-  gap: 12px;
   align-items: center;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
 .col {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
-
-/* ---------- Input Styling ---------- */
-input, textarea {
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid rgba(15, 23, 42, 0.1);
-  background: rgba(255, 255, 255, 0.7);
-  outline: none;
-  transition: all var(--transition);
-}
-
-body.theme-dark input, 
-body.theme-dark textarea {
-  background: rgba(30, 41, 59, 0.5);
-  color: var(--text);
-}
-
-input:focus, textarea:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
-}
-
-/* ---------- Todo Item Animation ---------- */
-.todo-item {
-  background: var(--surface);
-  border-radius: var(--radius);
-  padding: 10px 14px;
-  box-shadow: var(--shadow);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
-
-.todo-item.enter {
-  animation: fadeIn 0.4s ease forwards;
-}
-
-.todo-item.exit {
-  animation: fadeOut 0.3s ease forwards;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fadeOut {
-  from { opacity: 1; transform: translateY(0); }
-  to { opacity: 0; transform: translateY(10px); }
+  gap: 8px;
 }
 
 /* ---------- Responsive ---------- */
+
+/* 📱 Small Mobile (up to 480px) */
+@media (max-width: 480px) {
+  body {
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  .container {
+    gap: 12px;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+
+  input,
+  textarea {
+    font-size: 14px;
+  }
+
+  .todo-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .row {
+    gap: 6px;
+  }
+}
+
+/* 📲 Medium Mobile (481px - 640px) */
 @media (max-width: 640px) {
-  body { padding: 12px; }
-  .container { gap: 16px; }
-  .btn { width: 100%; }
+  body {
+    padding: 12px;
+  }
+
+  .btn {
+    width: 100%;
+  }
+
+  .container {
+    max-width: 100%;
+  }
+
+  .card {
+    padding: 14px;
+  }
+}
+
+/* 💻 Tablets (641px - 1024px) */
+@media (max-width: 1024px) {
+  .container {
+    max-width: 90%;
+  }
+
+  .card {
+    padding: 18px;
+  }
+
+  .btn {
+    padding: 10px 14px;
+  }
+
+  input,
+  textarea {
+    font-size: 15px;
+  }
+}
+
+/* 🖥️ Large Screens (1025px - 1440px) */
+@media (min-width: 1025px) and (max-width: 1440px) {
+  .container {
+    max-width: 850px;
+  }
+
+  .card {
+    padding: 18px 22px;
+  }
+
+  .btn {
+    padding: 12px 18px;
+  }
+}
+
+/* 🧠 Ultra-Wide (1440px+) */
+@media (min-width: 1441px) {
+  .container {
+    max-width: 1000px;
+  }
+
+  body {
+    font-size: 18px;
+  }
+
+  .card {
+    padding: 22px;
+  }
 }

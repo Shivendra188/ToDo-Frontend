@@ -1,32 +1,31 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { STORAGE_KEYS } from '../services/storage';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { STORAGE_KEYS } from "../services/storage";
 
 const SettingsContext = createContext();
 
 export const SettingsProvider = ({ children }) => {
-  const [theme, setTheme] = useState('light'); // 'light' | 'dark'
-  const [view, setView] = useState('expanded'); // 'compact' | 'expanded'
-  const [defaultSort, setDefaultSort] = useState('dueDate'); // 'dueDate' | 'priority' | 'createdAt'
+  const [theme, setTheme] = useState("light"); // 'light' | 'dark'
+  const [view, setView] = useState("expanded"); // 'compact' | 'expanded'
+  const [defaultSort, setDefaultSort] = useState("dueDate"); // 'dueDate' | 'priority' | 'createdAt'
 
-  // load saved settings from localStorage
+  // ✅ Load settings from localStorage
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(STORAGE_KEYS.SETTINGS);
-      if (raw) {
-        const s = JSON.parse(raw);
-        if (s.theme) setTheme(s.theme);
-        if (s.view) setView(s.view);
-        if (s.defaultSort) setDefaultSort(s.defaultSort);
+      const saved = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.theme) setTheme(parsed.theme);
+        if (parsed.view) setView(parsed.view);
+        if (parsed.defaultSort) setDefaultSort(parsed.defaultSort);
       }
-    } catch (e) {
-      // ignore
+    } catch (err) {
+      console.warn("⚠️ Failed to parse saved settings:", err);
     }
   }, []);
 
-  // apply theme to body class
+  // ✅ Apply theme + persist settings
   useEffect(() => {
-    if (theme === 'dark') document.body.classList.add('theme-dark');
-    else document.body.classList.remove('theme-dark');
+    document.body.classList.toggle("theme-dark", theme === "dark");
 
     localStorage.setItem(
       STORAGE_KEYS.SETTINGS,
@@ -34,9 +33,21 @@ export const SettingsProvider = ({ children }) => {
     );
   }, [theme, view, defaultSort]);
 
+  const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
+  const toggleView = () => setView((v) => (v === "compact" ? "expanded" : "compact"));
+
   return (
     <SettingsContext.Provider
-      value={{ theme, setTheme, view, setView, defaultSort, setDefaultSort }}
+      value={{
+        theme,
+        setTheme,
+        toggleTheme,
+        view,
+        setView,
+        toggleView,
+        defaultSort,
+        setDefaultSort,
+      }}
     >
       {children}
     </SettingsContext.Provider>

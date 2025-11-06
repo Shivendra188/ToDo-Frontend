@@ -1,36 +1,37 @@
-import React from 'react';
-import styles from './TodoList.module.css';
-import TodoItem from '../TodoItem/TodoItem';
-import EmptySVG from '../../assets/empty-illustration.svg'; // ensure present
+import React from "react";
+import TodoItem from "../TodoItem/TodoItem";
+import styles from "./TodoList.module.css";
 
-export default function TodoList({ todos, view = 'expanded', onEdit, selected = [], setSelected }) {
-  if (!todos || todos.length === 0) {
-    return (
-      <div className={styles.empty}>
-        <img src={EmptySVG} alt="" aria-hidden="true" />
-        <div>
-          <h3>No todos yet</h3>
-          <p className="muted">Add your first todo using the + Add button.</p>
-        </div>
-      </div>
+export default function TodoList({
+  todos,
+  view,
+  onEdit,
+  selected,
+  setSelected,
+  onToggle,
+  onDelete,
+  onShowToast,
+}) {
+  const toggleSelect = (id) => {
+    setSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
-  }
+  };
 
   return (
-    <ul className={styles.list} role="list">
-      {todos.map((t) => (
-        <li key={t.id}>
+    <div className={styles.listWrapper}>
+      {todos.map((todo) => (
+        <div key={todo.id} className={styles.todoTransition}>
           <TodoItem
-            todo={t}
+            todo={todo}
             view={view}
-            onEdit={() => onEdit(t)}
-            selected={selected.includes(t.id)}
-            onToggleSelect={() =>
-              setSelected((prev) => (prev.includes(t.id) ? prev.filter((id) => id !== t.id) : [...prev, t.id]))
-            }
+            onEdit={() => onEdit(todo)}
+            selected={selected.includes(todo.id)}
+            onToggleSelect={() => toggleSelect(todo.id)}
+            onShowToast={onShowToast}
           />
-        </li>
+        </div>
       ))}
-    </ul>
+    </div>
   );
 }

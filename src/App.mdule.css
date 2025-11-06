@@ -1,7 +1,0 @@
-/* small layout tweaks for App */
-:root { --gap: 12px; }
-
-.container {
-  margin-top: 8px;
-  margin-bottom: 32px;
-}

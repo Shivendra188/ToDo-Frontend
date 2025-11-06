@@ -1,108 +1,222 @@
-import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
-import { STORAGE_KEYS, loadTodos, saveTodos } from '../services/storage';
-import { v4 as uuidv4 } from 'uuid';
-import { isOverdue } from '../utils/helpers';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { v4 as uuidv4 } from "uuid";
+import { isOverdue } from "../utils/helpers";
+import { STORAGE_KEYS, loadTodos, saveTodos } from "../services/storage";
 
 const TodoContext = createContext();
+export const useTodos = () => useContext(TodoContext);
+
+const API_URL = "http://localhost:5000/api/todos";
 
 export const TodoProvider = ({ children }) => {
   const [todos, setTodos] = useState([]);
-  const [lastDeleted, setLastDeleted] = useState(null); // for undo
+  const [lastDeleted, setLastDeleted] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [undoTimer, setUndoTimer] = useState(null);
 
-  // load from storage once
+  // ✅ Fetch todos from backend (fallback: localStorage)
+  const fetchTodos = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(API_URL);
+      if (!res.ok) throw new Error("Failed to fetch todos");
+      const data = await res.json();
+      if (Array.isArray(data)) setTodos(data);
+      else throw new Error("Invalid data format");
+    } catch (err) {
+      console.warn("⚠️ Backend not reachable, using local storage:", err.message);
+      setTodos(loadTodos());
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loaded = loadTodos();
-    setTodos(loaded);
+    fetchTodos();
   }, []);
 
-  // persist on change (debounced could be added)
+  // ✅ Backup to localStorage
   useEffect(() => {
     saveTodos(todos);
   }, [todos]);
 
-  // core CRUD operations
-  const addTodo = (data) => {
+  // ✅ Add todo
+  const addTodo = async (data) => {
     const newTodo = {
-      id: uuidv4(),
-      title: data.title,
-      description: data.description || '',
-      createdAt: Date.now(),
+      title: data.title.trim(),
+      description: data.description || "",
       dueDate: data.dueDate || null,
-      priority: data.priority || 'low',
+      priority: data.priority || "low",
       tags: data.tags || [],
       completed: false,
-      subtasks: (data.subtasks || []).map((st) => ({ id: uuidv4(), title: st.title, completed: !!st.completed })),
     };
-    setTodos((t) => [newTodo, ...t]);
-    return newTodo;
+
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newTodo),
+      });
+      if (!res.ok) throw new Error("Failed to add todo");
+      await fetchTodos();
+    } catch (err) {
+      console.error("❌ Backend error, saving locally:", err.message);
+      const localTodo = { id: uuidv4(), ...newTodo, createdAt: Date.now() };
+      setTodos((prev) => [localTodo, ...prev]);
+    }
   };
 
-  const updateTodo = (id, patch) => {
-    setTodos((list) => list.map((t) => (t.id === id ? { ...t, ...patch } : t)));
+  // ✅ Update todo (edit / mark complete)
+  const updateTodo = async (id, patch) => {
+    try {
+      const res = await fetch(`${API_URL}/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patch),
+      });
+      if (!res.ok) throw new Error("Update failed");
+      await fetchTodos();
+    } catch (err) {
+      console.warn("⚠️ Update failed (offline), patching locally:", err.message);
+      setTodos((prev) =>
+        prev.map((t) => (t.id === id ? { ...t, ...patch } : t))
+      );
+    }
   };
 
-  const deleteTodo = (id) => {
-    setTodos((list) => {
-      const item = list.find((x) => x.id === id);
-      setLastDeleted({ items: [item], time: Date.now() });
-      return list.filter((x) => x.id !== id);
-    });
+  // ✅ Delete todo (with Undo)
+  const deleteTodo = async (id) => {
+    const item = todos.find((t) => t.id === id);
+    if (!item) return;
+
+    // Always store deleted items for Undo
+    setLastDeleted({ items: [item], time: Date.now() });
+
+    // Clear previous undo timer
+    if (undoTimer) clearTimeout(undoTimer);
+    setUndoTimer(setTimeout(() => setLastDeleted(null), 5000));
+
+    try {
+      const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Delete failed");
+      await fetchTodos();
+    } catch (err) {
+      console.warn("⚠️ Delete failed, removing locally:", err.message);
+      setTodos((prev) => prev.filter((t) => t.id !== id));
+    }
   };
 
-  const bulkDelete = (ids) => {
-    setTodos((list) => {
-      const removed = list.filter((x) => ids.includes(x.id));
-      setLastDeleted({ items: removed, time: Date.now() });
-      return list.filter((x) => !ids.includes(x.id));
-    });
+  // ✅ Bulk delete
+  const bulkDelete = async (ids) => {
+    const deletedItems = todos.filter((t) => ids.includes(t.id));
+    setLastDeleted({ items: deletedItems, time: Date.now() });
+
+    if (undoTimer) clearTimeout(undoTimer);
+    setUndoTimer(setTimeout(() => setLastDeleted(null), 5000));
+
+    for (const id of ids) await deleteTodo(id);
   };
 
-  const restoreLastDeleted = () => {
-    if (!lastDeleted) return;
-    setTodos((list) => [...lastDeleted.items, ...list]);
-    setLastDeleted(null);
+  // ✅ Undo last delete (restore local + backend)
+  const restoreLastDeleted = async () => {
+    if (!lastDeleted?.items?.length) return;
+    try {
+      for (const todo of lastDeleted.items) {
+        await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(todo),
+        });
+      }
+      await fetchTodos();
+    } catch (err) {
+      console.error("❌ Restore failed:", err.message);
+      // fallback local restore
+      setTodos((prev) => [...lastDeleted.items, ...prev]);
+    } finally {
+      setLastDeleted(null);
+      if (undoTimer) clearTimeout(undoTimer);
+    }
   };
 
+  // ✅ Toggle complete
   const toggleComplete = (id) => {
-    setTodos((list) => list.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t)));
+    const todo = todos.find((t) => t.id === id);
+    if (!todo) return;
+    updateTodo(id, { completed: !todo.completed });
   };
 
+  // ✅ Subtasks (local only)
   const addSubtask = (todoId, title) => {
     const sub = { id: uuidv4(), title, completed: false };
-    setTodos((list) => list.map((t) => (t.id === todoId ? { ...t, subtasks: [...t.subtasks, sub] } : t)));
+    setTodos((list) =>
+      list.map((t) =>
+        t.id === todoId
+          ? { ...t, subtasks: [...(t.subtasks || []), sub] }
+          : t
+      )
+    );
   };
 
   const toggleSubtask = (todoId, subId) => {
     setTodos((list) =>
       list.map((t) =>
-        t.id === todoId ? { ...t, subtasks: t.subtasks.map((s) => (s.id === subId ? { ...s, completed: !s.completed } : s)) } : t
+        t.id === todoId
+          ? {
+              ...t,
+              subtasks: t.subtasks.map((s) =>
+                s.id === subId ? { ...s, completed: !s.completed } : s
+              ),
+            }
+          : t
       )
     );
   };
 
-  // imports/exports
-  const exportJSON = () => {
-    return JSON.stringify({ todos, exportedAt: Date.now() }, null, 2);
-  };
+  // ✅ Export / Import JSON
+  const exportJSON = () =>
+    JSON.stringify({ todos, exportedAt: Date.now() }, null, 2);
 
   const importJSON = (jsonString, { merge = false } = {}) => {
     try {
       const parsed = JSON.parse(jsonString);
-      if (!Array.isArray(parsed.todos)) throw new Error('Invalid format');
-      const imported = parsed.todos.map((t) => ({ ...t, id: t.id || uuidv4() }));
+      if (!Array.isArray(parsed.todos)) throw new Error("Invalid format");
+      const imported = parsed.todos.map((t) => ({
+        ...t,
+        id: t.id || uuidv4(),
+      }));
       setTodos((curr) => (merge ? [...imported, ...curr] : imported));
     } catch (e) {
-      throw e;
+      console.error(e);
     }
   };
 
-  // derived values
-  const overdues = useMemo(() => todos.filter((t) => !t.completed && isOverdue(t.dueDate)), [todos]);
+  // ✅ Derived filtered lists
+  const activeTodos = useMemo(() => todos.filter((t) => !t.completed), [todos]);
+  const completedTodos = useMemo(
+    () => todos.filter((t) => t.completed),
+    [todos]
+  );
+  const overdueTodos = useMemo(
+    () => todos.filter((t) => !t.completed && isOverdue(t.dueDate)),
+    [todos]
+  );
 
   return (
     <TodoContext.Provider
       value={{
         todos,
+        activeTodos,
+        completedTodos,
+        overdueTodos,
+        loading,
+        fetchTodos,
         addTodo,
         updateTodo,
         deleteTodo,
@@ -114,13 +228,10 @@ export const TodoProvider = ({ children }) => {
         toggleSubtask,
         exportJSON,
         importJSON,
-        overdues,
-        setTodos
+        setTodos,
       }}
     >
       {children}
     </TodoContext.Provider>
   );
 };
-
-export const useTodos = () => useContext(TodoContext);

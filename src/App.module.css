@@ -1,0 +1,13 @@
+.filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.active {
+  background: var(--accent);
+  color: #fff !important;
+  border: none;
+}
