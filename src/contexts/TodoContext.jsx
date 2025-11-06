@@ -12,7 +12,7 @@ import { STORAGE_KEYS, loadTodos, saveTodos } from "../services/storage";
 const TodoContext = createContext();
 export const useTodos = () => useContext(TodoContext);
 
-const API_URL = "http://localhost:5000/api/todos";
+const API_URL = "https://t-odo-backend-8351rcxxj-shivendra188s-projects.vercel.app/api/todos";
 
 export const TodoProvider = ({ children }) => {
   const [todos, setTodos] = useState([]);

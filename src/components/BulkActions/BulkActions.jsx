@@ -22,7 +22,7 @@ export default function BulkActions({
     try {
       await Promise.all(
         selected.map((id) =>
-          fetch(`http://localhost:5000/api/todos/${id}`, {
+          fetch(`https://t-odo-backend-8351rcxxj-shivendra188s-projects.vercel.app/api/todos/${id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ completed: true }),
